@@ -43,29 +43,42 @@ export const Register: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`${API_URL}/register`, {
+      const registerResponse = await fetch(`${API_URL}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
       });
 
-      const data = await response.json();
+      const registerData = await registerResponse.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || "Ошибка при регистрации");
+      if (!registerResponse.ok) {
+        throw new Error(registerData.error || "Ошибка при регистрации");
       }
 
-      login(data.token, data.user);
       toast.success("Регистрация прошла успешно!");
+
+      // Автовход (отправляем запрос на /login)
+      const loginResponse = await fetch(`${API_URL}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const loginData = await loginResponse.json();
+
+      if (!loginResponse.ok) {
+        throw new Error(loginData.error || "Ошибка при входе");
+      }
+
+      // 3. Вход выполнен
+      login(loginData.token, loginData.user);
+      toast.success("Добро пожаловать!");
 
       // Очищаем форму
       setName("");
       setEmail("");
       setPassword("");
       setConfirmPassword("");
-
-      // Автоматически входим после регистрации
-      // (можно оставить пользователя на странице логина)
     } catch (err: any) {
       toast.error(" " + err.message);
     } finally {

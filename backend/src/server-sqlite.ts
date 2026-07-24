@@ -84,15 +84,22 @@ app.post("/register", async (req: Request, res: Response) => {
         }
         return res.status(500).json({ error: "Ошибка при регистрации" });
       }
+
+      const token = jwt.sign({ id: this.lastID, email, name }, JWT_SECRET, {
+        expiresIn: "7d",
+      });
+
       res.status(201).json({
         message: "Пользователь зарегистрирован",
-        id: this.lastID,
-        name: name,
-        email: email,
+        token: token,
+        user: {
+          id: this.lastID,
+          name: name,
+          email: email,
+        },
       });
     });
   } catch (err) {
-    console.error("❌ Критическая ошибка:", err); // ← добавить
     res.status(500).json({ error: "Ошибка при регистрации" });
   }
 });
